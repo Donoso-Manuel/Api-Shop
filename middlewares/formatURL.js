@@ -1,7 +1,8 @@
 const cloudinary = require("../config/cloudinaryConfig"); 
 const multer = require("multer");
-const multerStorageCloudinary = require("multer-storage-cloudinary").CloudinaryStorage;
+const { Readable } = require("stream");
 
+// Función para validar si la URL es válida
 const isValidUrl = (string) => {
   try {
     new URL(string);
@@ -11,21 +12,34 @@ const isValidUrl = (string) => {
   }
 };
 
-// Configuración de multer con almacenamiento Cloudinary
-const storage = new multerStorageCloudinary({
-  cloudinary: cloudinary,
-  params: {
-    folder: "productos", // Personaliza la carpeta en Cloudinary
-    allowed_formats: ["jpg", "jpeg", "png"], // Formatos permitidos
-  },
-});
+// Configuración de multer con almacenamiento en memoria
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB límite
+    fileSize: 5 * 1024 * 1024, // Límite de tamaño de archivo 5MB
   },
 }).single("image");
+
+const uploadImageToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const bufferStream = new Readable();
+    bufferStream.push(buffer);
+    bufferStream.push(null);
+
+    // Subir la imagen a Cloudinary usando el stream
+    cloudinary.uploader.upload_stream(
+      { folder: "productos" },
+      (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(result); // Retorna el resultado de la subida
+      }
+    ).end(buffer);
+  });
+};
 
 const formatURL = async (req, res, next) => {
   if (req.processedImage) {
@@ -49,7 +63,7 @@ const formatURL = async (req, res, next) => {
     return next();
   }
 
-  upload(req, res, (err) => {
+  upload(req, res, async (err) => {
     if (err) {
       console.error("Error en multer:", err);
       if (
@@ -84,8 +98,10 @@ const formatURL = async (req, res, next) => {
         }
 
         if (req.file) {
+          // Subir la imagen a Cloudinary
+          const result = await uploadImageToCloudinary(req.file.buffer);
           // Asignar la URL de la imagen subida a la respuesta
-          req.body.image = req.file.path; // multer-storage-cloudinary lo proporciona directamente
+          req.body.image = result.secure_url; // Cloudinary proporciona la URL segura
           req.processedImage = true;
           next();
         }

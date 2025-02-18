@@ -76,16 +76,15 @@ const formatURL = async (req, res, next) => {
         if (req.file) {
           const formData = new FormData();
           formData.append("image", req.file.buffer.toString("base64"));
+          const headers = {
+            ...formData.getHeaders(),
+          };
 
-          console.log("IMGBB API Key:", process.env.IMGBB_API_KEY);
           const imgbbResponse = await axios.post(
             `https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`,
             formData,
-            {
-              headers: formData.getHeaders(),
-            }
+            { headers }
           )
-          console.log("Respuesta de imgBB:", JSON.stringify(imgbbResponse.data, null, 2));
             req.processedImage = true;
             req.body.image = imgbbResponse.data.data.display_url;
         }

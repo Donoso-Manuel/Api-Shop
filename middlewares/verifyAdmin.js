@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const verifyAdmin = (req, res, next) => {
     try {
-        
+        console.log('Cookies: ', req.cookies);
         const token = req.cookies.userToken;
         if (!token) {
             return res.status(401).json({ message: "Acceso denegado: No hay token" });

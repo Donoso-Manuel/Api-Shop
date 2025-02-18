@@ -76,7 +76,8 @@ const formatURL = async (req, res, next) => {
         if (req.file) {
           const formData = new FormData();
           formData.append("image", req.file.buffer.toString("base64"));
-          console.log("llega imagen", req.file)
+
+          console.log("IMGBB API Key:", process.env.IMGBB_API_KEY);
           const imgbbResponse = await axios.post(
             "https://api.imgbb.com/1/upload",
             formData,
@@ -84,10 +85,14 @@ const formatURL = async (req, res, next) => {
               params: { key: process.env.IMGBB_API_KEY },
               headers: formData.getHeaders(),
             }
-          );
-          console.log("sigue")
-          req.processedImage = true;
-          req.body.image = imgbbResponse.data.data.display_url;
+          )
+          .then(response =>{
+            console.log("respuesta de imgBB", response.data)
+            console.log("sigue")
+            
+          })
+            req.processedImage = true;
+            req.body.image = imgbbResponse.data.data.display_url;
         }
 
         next();

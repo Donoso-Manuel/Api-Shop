@@ -113,7 +113,7 @@ const alterCategoryColumn = async () => {
 };
 const recommendedProductsDB = async()=>{
   try{
-    const query = "SELECT * FROM product ORDER BY likes DESC LIMIT 3;"
+    const query = "SELECT * FROM product ORDER BY likes DESC LIMIT 10;"
     const products =  await pool.query(query)
     return(products.rows)
   }catch(error){

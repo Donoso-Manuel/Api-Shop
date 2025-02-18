@@ -1,5 +1,5 @@
 const multer = require("multer");
-const cloudinary = require("./config/cloudinaryConfig"); // Importa la configuración de Cloudinary
+const cloudinary = require("../config/cloudinaryConfig"); // Importa la configuración de Cloudinary
 const { Readable } = require("stream");
 
 const isValidUrl = (string) => {

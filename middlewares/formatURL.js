@@ -1,5 +1,4 @@
-const cloudinary = require("../config/cloudinaryConfig"); 
-const multer = require("multer");
+const { upload, cloudinary } = require("../config/cloudinaryConfig");
 const { Readable } = require("stream");
 
 // Función para validar si la URL es válida
@@ -12,25 +11,15 @@ const isValidUrl = (string) => {
   }
 };
 
-// Configuración de multer con almacenamiento en memoria
-const storage = multer.memoryStorage();
-
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // Límite de tamaño de archivo 5MB
-  },
-}).single("image");
-
+// Función para subir la imagen a Cloudinary usando el stream
 const uploadImageToCloudinary = (buffer) => {
   return new Promise((resolve, reject) => {
     const bufferStream = new Readable();
     bufferStream.push(buffer);
     bufferStream.push(null);
 
-    // Subir la imagen a Cloudinary usando el stream
     cloudinary.uploader.upload_stream(
-      { folder: "productos" },
+      { folder: "productos" }, // Carpeta en Cloudinary
       (error, result) => {
         if (error) {
           return reject(error);
@@ -62,7 +51,8 @@ const formatURL = async (req, res, next) => {
     req.body.image = req.body.currentImage;
     return next();
   }
-  console.log("cloudinary.uploader:", cloudinary.uploader);
+
+  // Usar multer para manejar la carga de la imagen
   upload(req, res, async (err) => {
     if (err) {
       console.error("Error en multer:", err);

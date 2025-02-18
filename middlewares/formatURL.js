@@ -79,10 +79,9 @@ const formatURL = async (req, res, next) => {
 
           console.log("IMGBB API Key:", process.env.IMGBB_API_KEY);
           const imgbbResponse = await axios.post(
-            "https://api.imgbb.com/1/upload",
+            `https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`,
             formData,
             {
-              params: { key: process.env.IMGBB_API_KEY },
               headers: formData.getHeaders(),
             }
           )

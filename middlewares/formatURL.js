@@ -1,6 +1,6 @@
-const axios = require("axios");
 const multer = require("multer");
-const FormData = require("form-data");
+const cloudinary = require("./config/cloudinaryConfig"); // Importa la configuración de Cloudinary
+const { Readable } = require("stream");
 
 const isValidUrl = (string) => {
   try {
@@ -73,29 +73,34 @@ const formatURL = async (req, res, next) => {
             message: "No se recibió archivo de imagen",
           });
         }
+
         if (req.file) {
-          const formData = new FormData();
-          formData.append("image", req.file.buffer.toString("base64"));
-          const headers = {
-            ...formData.getHeaders(),
-          };
+          // Convertir el buffer de la imagen a un stream
+          const bufferStream = new Readable();
+          bufferStream.push(req.file.buffer);
+          bufferStream.push(null);
 
-          const imgbbResponse = await axios.post(
-            `https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`,
-            formData,
-            { headers }
-          )
-            req.processedImage = true;
-            req.body.image = imgbbResponse.data.data.display_url;
+          // Subir la imagen a Cloudinary
+          cloudinary.uploader.upload_stream(
+            { folder: "productos" }, // Puedes personalizar la carpeta en Cloudinary
+            (error, result) => {
+              if (error) {
+                console.error("Error al subir imagen a Cloudinary:", error);
+                return res.status(500).json({
+                  message: "Error al subir la imagen",
+                  error: error.message,
+                });
+              }
+
+              // Asignar la URL de la imagen subida a la respuesta
+              req.body.image = result.secure_url;
+              req.processedImage = true;
+              next();
+            }
+          ).end(req.file.buffer); // Usar el buffer de la imagen
         }
-
-        next();
       } catch (error) {
-        if (error.response) {
-          console.error("Error en la respuesta de imgBB:", JSON.stringify(error.response.data, null, 2));
-        } else {
-          console.error("Error de conexión o inesperado:", error.message);
-        }
+        console.error("Error al procesar imagen:", error.message);
         res.status(500).json({
           message: "Error al procesar la imagen",
           error: error.message,

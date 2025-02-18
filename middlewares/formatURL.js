@@ -40,51 +40,68 @@ const formatURL = async (req, res, next) => {
     return next();
   }
 
-  upload(req, res, async (err) => {
+  upload(req, res, (err) => {
     if (err) {
       console.error("Error en multer:", err);
+      if (
+        req.method === "PUT" &&
+        req.body.currentImage &&
+        isValidUrl(req.body.currentImage)
+      ) {
+        req.body.image = req.body.currentImage;
+        return next();
+      }
       return res.status(400).json({
         message: "Error al procesar la imagen: " + err.message,
       });
     }
 
-    try {
-      if (!req.file && req.method === "POST") {
-        return res.status(400).json({
-          message: "No se recibió archivo de imagen",
+    const processImage = async () => {
+      try {
+        if (
+          !req.file &&
+          req.method === "PUT" &&
+          req.body.currentImage &&
+          isValidUrl(req.body.currentImage)
+        ) {
+          req.body.image = req.body.currentImage;
+          return next();
+        }
+
+        if (!req.file && req.method === "POST") {
+          return res.status(400).json({
+            message: "No se recibió archivo de imagen",
+          });
+        }
+        if (req.file) {
+          const formData = new FormData();
+          formData.append("image", req.file.buffer.toString("base64"));
+
+          console.log("IMGBB API Key:", process.env.IMGBB_API_KEY);
+          const imgbbResponse = await axios.post(
+            `https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`,
+            formData,
+            {
+              headers: formData.getHeaders(),
+            }
+          )
+
+            req.processedImage = true;
+            req.body.image = imgbbResponse.data.data.display_url;
+        }
+
+        next();
+      } catch (error) {
+        console.log(imgbbResponse.data)
+        console.error("Error al procesar imagen:", error);
+        res.status(500).json({
+          message: "Error al procesar la imagen",
+          error: error.message,
         });
       }
+    };
 
-      if (req.file) {
-        const formData = new FormData();
-        
-        const imageBase64 = req.file.buffer.toString("base64");
-
-        formData.append("image", imageBase64);
-        formData.append("key", process.env.IMGBB_API_KEY); 
-
-        const imgbbResponse = await axios.post(
-          "https://api.imgbb.com/1/upload", 
-          formData,
-          {
-            headers: {
-              ...formData.getHeaders(),
-            },
-          }
-        );
-
-        req.processedImage = true;
-        req.body.image = imgbbResponse.data.data.display_url;
-      }
-
-      next();
-    } catch (error) {
-      console.error("Error al procesar imagen:", error);
-      res.status(500).json({
-        message: "Error al procesar la imagen",
-        error: error.message,
-      });
-    }
+    processImage();
   });
 };
 

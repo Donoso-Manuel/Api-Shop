@@ -1,6 +1,6 @@
+const cloudinary = require("../config/cloudinaryConfig"); 
 const multer = require("multer");
-const cloudinary = require("../config/cloudinaryConfig"); // Importa la configuración de Cloudinary
-const { Readable } = require("stream");
+const multerStorageCloudinary = require("multer-storage-cloudinary").CloudinaryStorage;
 
 const isValidUrl = (string) => {
   try {
@@ -11,8 +11,17 @@ const isValidUrl = (string) => {
   }
 };
 
+// Configuración de multer con almacenamiento Cloudinary
+const storage = new multerStorageCloudinary({
+  cloudinary: cloudinary,
+  params: {
+    folder: "productos", // Personaliza la carpeta en Cloudinary
+    allowed_formats: ["jpg", "jpeg", "png"], // Formatos permitidos
+  },
+});
+
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB límite
   },
@@ -75,29 +84,10 @@ const formatURL = async (req, res, next) => {
         }
 
         if (req.file) {
-          // Convertir el buffer de la imagen a un stream
-          const bufferStream = new Readable();
-          bufferStream.push(req.file.buffer);
-          bufferStream.push(null);
-
-          // Subir la imagen a Cloudinary
-          cloudinary.uploader.upload_stream(
-            { folder: "productos" }, // Puedes personalizar la carpeta en Cloudinary
-            (error, result) => {
-              if (error) {
-                console.error("Error al subir imagen a Cloudinary:", error);
-                return res.status(500).json({
-                  message: "Error al subir la imagen",
-                  error: error.message,
-                });
-              }
-
-              // Asignar la URL de la imagen subida a la respuesta
-              req.body.image = result.secure_url;
-              req.processedImage = true;
-              next();
-            }
-          ).end(req.file.buffer); // Usar el buffer de la imagen
+          // Asignar la URL de la imagen subida a la respuesta
+          req.body.image = req.file.path; // multer-storage-cloudinary lo proporciona directamente
+          req.processedImage = true;
+          next();
         }
       } catch (error) {
         console.error("Error al procesar imagen:", error.message);

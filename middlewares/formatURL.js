@@ -85,15 +85,18 @@ const formatURL = async (req, res, next) => {
               headers: formData.getHeaders(),
             }
           )
-
+          console.log("Respuesta de imgBB:", JSON.stringify(imgbbResponse.data, null, 2));
             req.processedImage = true;
             req.body.image = imgbbResponse.data.data.display_url;
         }
 
         next();
       } catch (error) {
-        console.log(imgbbResponse.data)
-        console.error("Error al procesar imagen:", error);
+        if (error.response) {
+          console.error("Error en la respuesta de imgBB:", JSON.stringify(error.response.data, null, 2));
+        } else {
+          console.error("Error de conexión o inesperado:", error.message);
+        }
         res.status(500).json({
           message: "Error al procesar la imagen",
           error: error.message,

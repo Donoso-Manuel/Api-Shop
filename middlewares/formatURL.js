@@ -62,7 +62,7 @@ const formatURL = async (req, res, next) => {
     req.body.image = req.body.currentImage;
     return next();
   }
-
+  console.log("cloudinary.uploader:", cloudinary.uploader);
   upload(req, res, async (err) => {
     if (err) {
       console.error("Error en multer:", err);

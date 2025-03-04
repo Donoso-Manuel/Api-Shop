@@ -251,6 +251,7 @@ const logout = async (req, res) => {
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
         });
+        console.log("sesion cerrada")
         res.status(200).json({ message: "Sesión cerrada exitosamente" });
     } catch (error) {
         //logging del error

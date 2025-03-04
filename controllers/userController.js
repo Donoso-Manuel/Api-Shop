@@ -196,7 +196,7 @@ const loginUser = async (req, res) => {
         res.cookie("userToken", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
             maxAge: 3600000,
         });
 
@@ -250,6 +250,7 @@ const logout = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
+            path: "/",
         });
         console.log("sesion cerrada")
         res.status(200).json({ message: "Sesión cerrada exitosamente" });

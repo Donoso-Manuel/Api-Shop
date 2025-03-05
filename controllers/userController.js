@@ -23,6 +23,7 @@ const updateStatus = async (req, res) => {
     try {
         const { status } = req.body;
         const { id } = req.params;
+        console.log("actulizando usuario", id, status)
         await userModel.updateStatusDB(id, status);
         res.status(200).json({ message: "Estado actualizado correctamente" });
     } catch (error) {

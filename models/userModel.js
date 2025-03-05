@@ -133,7 +133,7 @@ const updatePasswordDB = async (userId, newPassword) => {
 //Obtener todos los usuarios
 const getUsersDB = async () => {
   try {
-    const query = "SELECT id, name, email, rol, status FROM users;";
+    const query = "SELECT id, name, email, rol, status FROM users WHERE rol = 'cliente';";
     const result = await pool.query(query);
     return result.rows;
   } catch (error) {

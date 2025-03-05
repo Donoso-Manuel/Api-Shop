@@ -7,6 +7,7 @@ require("dotenv").config();
 const getUsers = async (req, res) => {
     try {
         const users = await userModel.getUsersDB();
+        console.log(users)
         res.status(200).json(users);
     } catch (error) {
         //logging del error

@@ -133,7 +133,24 @@ const updatePasswordDB = async (userId, newPassword) => {
 //Obtener todos los usuarios
 const getUsersDB = async () => {
   try {
-    const query = "SELECT id, name, email, rol, status FROM users WHERE rol = 'cliente';";
+    const query = `
+      SELECT 
+        u.id,
+        u.name,
+        u.email,
+        u.rol,
+        u.status,
+        COALESCE(SUM(uc.purchase_total), 0) AS total_purchase,
+        MAX(uc.purchase_date) AS last_purchase
+      FROM 
+        users u
+      LEFT JOIN 
+        user_cart uc ON u.id = uc.id_user
+      WHERE 
+        u.rol = 'cliente' AND uc.id_purch IS NOT NULL
+      GROUP BY 
+        u.id;
+    `;
     const result = await pool.query(query);
     return result.rows;
   } catch (error) {

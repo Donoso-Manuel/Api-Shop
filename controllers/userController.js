@@ -196,7 +196,7 @@ const loginUser = async (req, res) => {
         res.cookie("userToken", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "Stric",
+            sameSite: "None",
             path: "/",
             maxAge: 3600000,
         });
@@ -250,7 +250,7 @@ const logout = async (req, res) => {
         res.clearCookie("userToken", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            sameSite: "None",
             path: "/",
         });
         console.log("sesion cerrada")

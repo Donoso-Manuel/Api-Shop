@@ -176,7 +176,9 @@ const loginUser = async (req, res) => {
         if (!user) {
             return res.status(401).json({ message: "❌ Credenciales incorrectas" });
         }
-
+        if(user.status === false){
+            return res.status(401).json({ message: "❌ usuario desactivado, contactese con el administrador" });
+        }
         const isMatch = await userModel.validatePasswordDB(password, user.password);
 
         if (!isMatch) {

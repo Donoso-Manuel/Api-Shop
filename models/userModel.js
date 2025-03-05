@@ -6,7 +6,7 @@ require("dotenv").config();
 const findByEmailDB = async (email) => {
   try {
     const query =
-      "SELECT id, email, password, rol, name FROM users WHERE email = $1;";
+      "SELECT id, email, password, rol, status, name FROM users WHERE email = $1;";
     const values = [email];
     const result = await pool.query(query, values);
     return result.rows[0];

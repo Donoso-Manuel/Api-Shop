@@ -140,14 +140,14 @@ const getUsersDB = async () => {
         u.email,
         u.rol,
         u.status,
-        COALESCE(SUM(uc.purchase_total), 0) AS total_purchase,
-        MAX(uc.purchase_date) AS last_purchase
+        COALESCE(SUM(uc.purchase_total), 0) AS total_compras,
+        MAX(uc.purchase_date) AS ultima_compra
       FROM 
         users u
       LEFT JOIN 
-        user_cart uc ON u.id = uc.id_user
+        user_cart uc ON u.id = uc.id_user AND uc.id_purch IS NOT NULL
       WHERE 
-        u.rol = 'cliente' AND uc.id_purch IS NOT NULL
+        u.rol = 'cliente'
       GROUP BY 
         u.id;
     `;

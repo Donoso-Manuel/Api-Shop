@@ -149,6 +149,7 @@ const updateStatusDB = async (id, status) => {
   try {
     const query = `UPDATE users SET status = $1 WHERE id = $2;`;
     const values = [status, id];
+    console.log(query, values)
     await pool.query(query, values);
     return { success: true, message: "Estado actualizado correctamente" };
   } catch (error) {

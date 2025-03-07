@@ -66,7 +66,7 @@ const postCart = async (req, res) => {
 };
 const deleteItemCart = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
     await cartModel.deleteItemCartDB(id);
     res.status(200).json({ message: "Producto eliminado del carrito" });
   } catch (error) {
